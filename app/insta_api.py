@@ -1,8 +1,10 @@
 import instagrapi
 import os
 import json
+import logging
 from instagrapi.exceptions import ClientError
 
+logger = logging.getLogger()
 
 class InstaAPI:
     def __init__(self, username: str, password: str):
@@ -58,5 +60,6 @@ class InstaAPI:
             print(type(message.user_id))
             if int(self.api.user_id_from_username(self.username)) == message.user_id:
                 print(f"Message no {i}: {message.text}")
+                self.api.delay_range = [1,3]
                 self.api.direct_message_delete(thread_id, int(message.id))
                 print(f"Message no {i} deleted!")

@@ -2,3 +2,4 @@ test/
 __pycache__/
 .vscode/
 UNgram/
+session.json
