@@ -1,26 +1,50 @@
 import instagrapi
 import os
-import json
-import logging
-from instagrapi.exceptions import ClientError
 
-logger = logging.getLogger()
+from instagrapi.exceptions import ClientError
 
 class InstaAPI:
     def __init__(self, username: str, password: str):
         self.username = username
         self.password = password
         self.api = instagrapi.Client()
-        self.login()
+        self.api.delay_range = [1,3]
+        self.session_file = "session.json"
+        self.session = None
+        self.load_session()
 
-    def login(self):
-        try:
-            self.api.login(self.username, self.password)
-            print(f"Logged in successfully as {self.username}!")
-        except ClientError as e:
-            print(f"Failed to login: {e}")
-            exit(1)
+    def load_session(self):
+        if os.path.exists(self.session_file) and os.path.getsize(self.session_file) > 0:
+                self.session = self.api.load_settings(self.session_file)
+        else:
+            print("Session file does not exist or is empty")
+
+        self.login()
     
+    def login(self):
+        if self.session:
+            try:
+                self.api.set_settings(self.session)
+                self.api.login(self.username, self.password)
+                try:
+                    self.api.get_timeline_feed()
+                except LoginRequired:
+                    old_session = self.api.get_settings()
+                    self.api.set_settings({})
+                    self.api.set_uuids(old_session["uuids"])
+                    self.api.login(self.username, self.password)
+                print(f"Logged in successfully as {self.username} via session!")
+            except Exception as e:
+                print(f"Couldn't login user using session information: {e}")
+        else:
+            try:
+                self.api.login(self.username, self.password)
+                self.api.dump_settings(self.session_file)
+                print(f"Logged in successfully as {self.username}!")
+            except ClientError as e:
+                print(f"Failed to login: {e}")
+                exit(1)
+        
     def get_account_info(self, info: str = ""):
         if info == "":
             user_info =  self.api.account_info().dict()
@@ -54,12 +78,11 @@ class InstaAPI:
                 print(f"Message no {i}: Image Type: {message.clip.thumbnail_url}")
     
     def delete_direct_thread_messages(self, thread_id: int):
-        messages = self.api.direct_messages(thread_id, amount=2147483647)
+        messages = self.api.direct_messages(thread_id, amount=200000)
         for i, message in enumerate(messages):
             print(message.user_id)
             print(type(message.user_id))
             if int(self.api.user_id_from_username(self.username)) == message.user_id:
                 print(f"Message no {i}: {message.text}")
-                self.api.delay_range = [1,3]
                 self.api.direct_message_delete(thread_id, int(message.id))
                 print(f"Message no {i} deleted!")
