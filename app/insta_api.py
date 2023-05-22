@@ -15,7 +15,7 @@ class InstaAPI:
 
     def load_session(self):
         if os.path.exists(self.session_file) and os.path.getsize(self.session_file) > 0:
-                self.session = self.api.load_settings(self.session_file)
+                self.session = self.api.load_settings(self.session_file) # type: ignore
         else:
             print("Session file does not exist or is empty")
 
@@ -39,21 +39,17 @@ class InstaAPI:
         else:
             try:
                 self.api.login(self.username, self.password)
-                self.api.dump_settings(self.session_file)
+                self.api.dump_settings(self.session_file) # type: ignore
                 print(f"Logged in successfully as {self.username}!")
             except ClientError as e:
                 print(f"Failed to login: {e}")
                 exit(1)
         
     def get_account_info(self, info: str = ""):
-        if info == "":
-            user_info =  self.api.account_info().dict()
-            for key, value in user_info.items():
-                print(f"{key}: {value}")
-        else:
-            self.login()
-            user_info =  self.api.account_info().dict()
-            return user_info[info]
+        user_info =  self.api.account_info().dict()
+        for key, value in user_info.items():
+            print(f"{key}: {value}")
+        return user_info
         
     def get_direct_threads(self):
         threads = self.api.direct_threads(thread_message_limit=2)
