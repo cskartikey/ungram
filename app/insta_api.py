@@ -28,7 +28,7 @@ class InstaAPI:
                 self.api.login(self.username, self.password)
                 try:
                     self.api.get_timeline_feed()
-                except LoginRequired:
+                except ClientError:
                     old_session = self.api.get_settings()
                     self.api.set_settings({})
                     self.api.set_uuids(old_session["uuids"])
