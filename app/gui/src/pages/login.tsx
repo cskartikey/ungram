@@ -1,4 +1,3 @@
-import Image from "next/image";
 import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CSS
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Footer from "../components/footer";
@@ -8,13 +7,13 @@ import login from "@/api/login";
 // import '@/css/globals.css'
 
 export default function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const handleFormSubmit = (event: { preventDefault: () => void; }) => {
-        event.preventDefault();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const handleFormSubmit = (event: { preventDefault: () => void }) => {
+    event.preventDefault();
 
-        login(email, password);
-      };
+    login(email, password);
+  };
 
   return (
     <main>
